@@ -1,31 +1,11 @@
 package chatapp.carolineeklund.exceptions;
 
-/**
- * Custom exception thrown when a requested resource is not found.
- * Typically used for handling cases where an entity, such as a user or chat,
- * is requested by its ID but does not exist in the database.
- */
-public class ResourceNotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-    /**
-     * Constructs a new ResourceNotFoundException with the specified detail message.
-     *
-     * @param message the detail message explaining why the exception was thrown.
-     */
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
+public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {
         super(message);
     }
-
-    /**
-     * Constructs a new ResourceNotFoundException with the specified detail message
-     * and cause.
-     *
-     * @param message the detail message explaining why the exception was thrown.
-     * @param cause the cause of the exception (a null value is permitted, and indicates
-     *              that the cause is nonexistent or unknown).
-     */
-    public ResourceNotFoundException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }
-
