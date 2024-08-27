@@ -8,21 +8,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * Service class responsible for handling user-related operations such as searching users by ID.
- */
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * Searches for a user by their ID.
-     *
-     * @param userId the ID of the user to search for.
-     * @return the UserDTO containing the user's details, or null if the user is not found.
-     */
+    //söka användare på userId
     public UserDTO searchUserById(String userId) {
         if (userRepository.existsById(userId)) {
             Optional<User> userOptional = userRepository.findById(userId);
@@ -36,7 +28,7 @@ public class UserService {
                 return null;
             }
         } else {
-            return null;  // User not found
+            return null;  // Användaren finns inte
         }
     }
 }

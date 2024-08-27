@@ -10,14 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Service class responsible for handling chat-related operations,
- * including creating chats, sending messages, and managing participants.
- */
 @Service
 public class ChatService {
 
@@ -27,11 +24,7 @@ public class ChatService {
     @Autowired
     private MessageRepository messageRepository;
 
-    /**
-     * Retrieves all chats ordered by the most recent message timestamp.
-     *
-     * @return a list of ChatDTO objects representing the chats.
-     */
+    // Hämta alla chattar sorterade efter senaste meddelande först
     public List<ChatDTO> getAllChats() {
         return chatRepository.findAllByOrderByLastMessageTimeDesc().stream().map(chat -> {
             ChatDTO chatDTO = new ChatDTO();
@@ -41,15 +34,7 @@ public class ChatService {
         }).collect(Collectors.toList());
     }
 
-
     public String startChat(ChatDTO chatDTO) {
-        /**
-         * Starts a new chat with the given chat ID or retrieves the existing chat.
-         *
-         * @param chatId the ID of the chat to start or retrieve.
-         * @return the ID of the started or existing chat.
-         */
-
         Chat chat = new Chat();
         chat.setName(chatDTO.getName());
         chat.setParticipants(chatDTO.getParticipants());
@@ -59,19 +44,14 @@ public class ChatService {
         return chat.getId();
     }
 
-    /**
-     * Sends a message to the specified chat.
-     *
-     * @param chatId the ID of the chat to send the message to.
-     * @param content the content of the message to be sent.
-     */
+    // Skicka meddelande till specifik chatt
     public void sendMessage(String chatId, String content) {
         Optional<Chat> chatOptional = chatRepository.findById(chatId);
         if (chatOptional.isPresent()) {
             Chat chat = chatOptional.get();
             Message message = new Message();
             message.setContent(content);
-            message.setSender("sender");  // Placeholder for sender, should be replaced with actual sender
+            message.setSender("sender");  // Placeholder för avsändare, kan justeras
             message.setTimestamp(LocalDateTime.now().toString());
             messageRepository.save(message);
             chat.getMessages().add(message);
@@ -80,12 +60,7 @@ public class ChatService {
         }
     }
 
-    /**
-     * Adds a participant to the specified chat.
-     *
-     * @param chatId the ID of the chat.
-     * @param userId the ID of the user to add as a participant.
-     */
+    // Lägg till deltagare i en chatt
     public void addParticipant(String chatId, String userId) {
         Optional<Chat> chatOptional = chatRepository.findById(chatId);
         if (chatOptional.isPresent()) {
@@ -95,16 +70,49 @@ public class ChatService {
         }
     }
 
-    /**
-     * Retrieves the messages in the specified chat.
-     *
-     * @param chatId the ID of the chat.
-     * @return a list of MessageDTO objects representing the messages in the chat.
-     */
+    // Läs meddelanden från en specifik chatt
+//    public List<MessageDTO> getMessagesByChatId(String chatId) {
+//        Optional<Chat> chatOptional = chatRepository.findById(chatId);
+//        if (chatOptional.isPresent()) {
+//            return chatOptional.get().getMessages().stream().map(message -> {
+//                MessageDTO messageDTO = new MessageDTO();
+//                messageDTO.setId(message.getId());
+//                messageDTO.setSender(message.getSender());
+//                messageDTO.setContent(message.getContent());
+//                messageDTO.setTimestamp(message.getTimestamp());
+//                return messageDTO;
+//            }).collect(Collectors.toList());
+//        }
+//        return null;
+//    }
+
+//    public List<MessageDTO> getMessagesByChatId(String chatId) {
+//        Optional<Chat> chatOptional = chatRepository.findById(chatId);
+//        if (chatOptional.isPresent()) {
+//            List<Message> messages = chatOptional.get().getMessages();
+//            if (messages.isEmpty()) {
+//                return new ArrayList<>();  // Return an empty list if there are no messages
+//            }
+//            return messages.stream().map(message -> {
+//                MessageDTO messageDTO = new MessageDTO();
+//                messageDTO.setId(message.getId());
+//                messageDTO.setSender(message.getSender());
+//                messageDTO.setContent(message.getContent());
+//                messageDTO.setTimestamp(message.getTimestamp());
+//                return messageDTO;
+//            }).collect(Collectors.toList());
+//        }
+//        return new ArrayList<>();  // Return an empty list if the chat doesn't exist
+//    }
+
     public List<MessageDTO> getMessagesByChatId(String chatId) {
         Optional<Chat> chatOptional = chatRepository.findById(chatId);
         if (chatOptional.isPresent()) {
-            return chatOptional.get().getMessages().stream().map(message -> {
+            List<Message> messages = chatOptional.get().getMessages();
+            if (messages == null || messages.isEmpty()) {
+                return new ArrayList<>();  // Return an empty list if messages are null or empty
+            }
+            return messages.stream().map(message -> {
                 MessageDTO messageDTO = new MessageDTO();
                 messageDTO.setId(message.getId());
                 messageDTO.setSender(message.getSender());
@@ -113,7 +121,6 @@ public class ChatService {
                 return messageDTO;
             }).collect(Collectors.toList());
         }
-        return null;
+        return new ArrayList<>();  // Return an empty list if the chat doesn't exist
     }
 }
-
