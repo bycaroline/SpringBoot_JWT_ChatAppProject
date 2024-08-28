@@ -72,9 +72,8 @@ public class ChatController {
 
 
     @PostMapping("/{id}")
-    public String sendMessage(@PathVariable String id, @RequestParam String message) {
-        chatService.sendMessage(id, message);
-        return "Message sent to chat ID: " + id;
+    public void addMessageToChat(@PathVariable String id, @RequestBody MessageDTO messageDTO) {
+        chatService.addMessageToChat(id, messageDTO);
     }
 
     @PutMapping("/{id}")

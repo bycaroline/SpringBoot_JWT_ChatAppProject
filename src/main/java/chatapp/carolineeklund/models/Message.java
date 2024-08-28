@@ -2,28 +2,20 @@ package chatapp.carolineeklund.models;
 
 import lombok.Getter;
 
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+
+@Document(collection = "messages")
 @Getter
+@Setter
 public class Message {
+    @Id
     private String id;
-    private String sender;
+    private String senderId;
     private String content;
-    private String timestamp;
-
-    // Getter och Setter metoder
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
+    private LocalDateTime createdAt;
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,21 +45,6 @@ public class ChatService {
         return chat.getId();
     }
 
-    // Skicka meddelande till specifik chatt
-    public void sendMessage(String chatId, String content) {
-        Optional<Chat> chatOptional = chatRepository.findById(chatId);
-        if (chatOptional.isPresent()) {
-            Chat chat = chatOptional.get();
-            Message message = new Message();
-            message.setContent(content);
-            message.setSender("sender");  // Placeholder för avsändare, kan justeras
-            message.setTimestamp(LocalDateTime.now().toString());
-            messageRepository.save(message);
-            chat.getMessages().add(message);
-            chat.setLastMessageTime(LocalDateTime.now());
-            chatRepository.save(chat);
-        }
-    }
 
     // Lägg till deltagare i en chatt
     public void addParticipant(String chatId, String userId) {
@@ -70,57 +56,37 @@ public class ChatService {
         }
     }
 
-    // Läs meddelanden från en specifik chatt
-//    public List<MessageDTO> getMessagesByChatId(String chatId) {
-//        Optional<Chat> chatOptional = chatRepository.findById(chatId);
-//        if (chatOptional.isPresent()) {
-//            return chatOptional.get().getMessages().stream().map(message -> {
-//                MessageDTO messageDTO = new MessageDTO();
-//                messageDTO.setId(message.getId());
-//                messageDTO.setSender(message.getSender());
-//                messageDTO.setContent(message.getContent());
-//                messageDTO.setTimestamp(message.getTimestamp());
-//                return messageDTO;
-//            }).collect(Collectors.toList());
-//        }
-//        return null;
-//    }
+    public Chat getChat(String chatId) {
+        return chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found"));
+    }
 
-//    public List<MessageDTO> getMessagesByChatId(String chatId) {
-//        Optional<Chat> chatOptional = chatRepository.findById(chatId);
-//        if (chatOptional.isPresent()) {
-//            List<Message> messages = chatOptional.get().getMessages();
-//            if (messages.isEmpty()) {
-//                return new ArrayList<>();  // Return an empty list if there are no messages
-//            }
-//            return messages.stream().map(message -> {
-//                MessageDTO messageDTO = new MessageDTO();
-//                messageDTO.setId(message.getId());
-//                messageDTO.setSender(message.getSender());
-//                messageDTO.setContent(message.getContent());
-//                messageDTO.setTimestamp(message.getTimestamp());
-//                return messageDTO;
-//            }).collect(Collectors.toList());
-//        }
-//        return new ArrayList<>();  // Return an empty list if the chat doesn't exist
-//    }
-
-    public List<MessageDTO> getMessagesByChatId(String chatId) {
-        Optional<Chat> chatOptional = chatRepository.findById(chatId);
+    public void addMessageToChat(String id, MessageDTO messageDTO) {
+        Optional<Chat> chatOptional = chatRepository.findById(id);
         if (chatOptional.isPresent()) {
-            List<Message> messages = chatOptional.get().getMessages();
-            if (messages == null || messages.isEmpty()) {
-                return new ArrayList<>();  // Return an empty list if messages are null or empty
-            }
-            return messages.stream().map(message -> {
+            Chat chat = chatOptional.get();
+            Message message = new Message();
+            message.setSenderId(messageDTO.getSenderId());
+            message.setContent(messageDTO.getContent());
+            message.setCreatedAt(LocalDateTime.now());
+            chat.getMessages().add(message);
+            chat.setLastMessageTime(LocalDateTime.now());
+            chatRepository.save(chat);
+        }
+    }
+
+    public List<MessageDTO> getMessagesByChatId(String id) {
+        Optional<Chat> chatOptional = chatRepository.findById(id);
+        if (chatOptional.isPresent()) {
+            Chat chat = chatOptional.get();
+            return chat.getMessages().stream().map(message -> {
                 MessageDTO messageDTO = new MessageDTO();
-                messageDTO.setId(message.getId());
-                messageDTO.setSender(message.getSender());
+                messageDTO.setSenderId(message.getSenderId());
                 messageDTO.setContent(message.getContent());
-                messageDTO.setTimestamp(message.getTimestamp());
                 return messageDTO;
             }).collect(Collectors.toList());
         }
-        return new ArrayList<>();  // Return an empty list if the chat doesn't exist
+        return new ArrayList<>();
     }
+
+
 }
