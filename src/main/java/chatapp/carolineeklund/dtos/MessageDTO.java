@@ -7,8 +7,7 @@ import lombok.Setter;
 @Setter
 public class MessageDTO {
     private String id;
-    private String senderId;
+    private String senderEmail;
     private String content;
     private String timestamp;
-
 }

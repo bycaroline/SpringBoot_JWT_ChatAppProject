@@ -5,6 +5,7 @@ import chatapp.carolineeklund.dtos.MessageDTO;
 import chatapp.carolineeklund.models.Chat;
 import chatapp.carolineeklund.services.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -25,52 +26,26 @@ public class ChatController {
         return chatService.getAllChats();
     }
 
+    private String getCurrentUserId() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userDetails.getUsername(); //User email extracted as username
+    }
+
     @PostMapping
     public String startChat(@RequestBody ChatDTO chatDTO) {
-        // Step 1: Get the current user's username or details
-        String currentUsername = getCurrentUserUsername();
+        String currentUserId = getCurrentUserId(); // Retrieve the current user ID
 
-        // Step 2: Add the current user to the participants
         List<String> participants = chatDTO.getParticipants();
         if (participants == null) {
             participants = new ArrayList<>();
         }
-        if (!participants.contains(currentUsername)) {
-            participants.add(currentUsername);
+        if (!participants.contains(currentUserId)) {
+            participants.add(currentUserId);
         }
         chatDTO.setParticipants(participants);
 
-        // Step 3: Create the chat
-        Chat chat = new Chat();
-        chat.setName(chatDTO.getName());
-        chat.setParticipants(participants);  // now includes the current user
-        chat.setCreatedAt(LocalDateTime.now());
-        chat.setLastMessageTime(LocalDateTime.now());
-
         return chatService.startChat(chatDTO);
     }
-
-    private String getCurrentUserUsername() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            return ((UserDetails) principal).getUsername();
-        } else {
-            return principal.toString(); // For simplicity, assuming principal is username
-        }
-    }
-
-
-//    private int getCurrentUserId() {
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        if (principal instanceof UserDetails) {  // Assuming you're using a custom implementation
-//            return ((UserDetails) principal).getId();
-//        } else {
-//            throw new IllegalStateException("Principal is not an instance of CustomUserDetails");
-//        }
-//    }
-
-
-
     @PostMapping("/{id}")
     public void addMessageToChat(@PathVariable String id, @RequestBody MessageDTO messageDTO) {
         chatService.addMessageToChat(id, messageDTO);

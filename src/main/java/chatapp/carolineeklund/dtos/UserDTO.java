@@ -5,9 +5,7 @@ import lombok.Getter;
 @Getter
 public class UserDTO {
 
-    // Getter och Setter för id
     private String id;
-    // Getter och Setter för username
     private String username;
 
     public void setId(String id) {
