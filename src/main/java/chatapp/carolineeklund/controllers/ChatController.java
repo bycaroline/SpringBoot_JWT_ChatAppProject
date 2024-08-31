@@ -52,8 +52,8 @@ public class ChatController {
     }
 
     @PutMapping("/{id}")
-    public void addParticipantToChat(@PathVariable String id, @RequestParam String userId) {
-        chatService.addParticipant(id, userId);
+    public void addParticipantToChat(@PathVariable String id, @RequestParam String userEmail) {
+        chatService.addParticipant(id, userEmail);
     }
 
     @GetMapping("/{id}")

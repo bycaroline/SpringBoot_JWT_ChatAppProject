@@ -5,6 +5,7 @@ import chatapp.carolineeklund.dtos.MessageDTO;
 import chatapp.carolineeklund.models.Chat;
 import chatapp.carolineeklund.models.Message;
 import chatapp.carolineeklund.repositories.ChatRepository;
+import chatapp.carolineeklund.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,39 +23,43 @@ public class ChatService {
     @Autowired
     private ChatRepository chatRepository;
 
+
     // Get the current user’s ID
-    private String getCurrentUserId() {
+    private String getCurrentUserName() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userDetails.getUsername(); //User email extracted as username
     }
 
+
     //Get all chats sorted by last message first
     public List<ChatDTO> getAllChats() {
-        String currentUserId = getCurrentUserId();
+        String currentUserName = getCurrentUserName();
 
         return chatRepository.findAllByOrderByLastMessageTimeDesc().stream()
-                .filter(chat -> chat.getParticipants().contains(currentUserId))
+                .filter(chat -> chat.getParticipants().contains(currentUserName))
                 .map(chat -> {
-            ChatDTO chatDTO = new ChatDTO();
-            chatDTO.setName(chat.getName());
-            chatDTO.setParticipants(chat.getParticipants());
-            return chatDTO;
-        }).collect(Collectors.toList());
+                    ChatDTO chatDTO = new ChatDTO();
+                    chatDTO.setName(chat.getName());
+                    chatDTO.setParticipants(chat.getParticipants());
+                    return chatDTO;
+                }).collect(Collectors.toList());
     }
 
+
     public String startChat(ChatDTO chatDTO) {
-        String currentUserId = getCurrentUserId(); // Make sure this method retrieves the current user ID correctly
+        String currentUserName = getCurrentUserName();
 
         List<String> participants = chatDTO.getParticipants();
         if (participants == null) {
             participants = new ArrayList<>();
         }
-        if (!participants.contains(currentUserId)) {
-            participants.add(currentUserId);
+        if (!participants.contains(currentUserName)) {
+            participants.add(currentUserName);
         }
 
         Chat chat = new Chat();
-        chatDTO.setParticipants(participants); // Ensure that chatDTO has the correct participants list
+
+        chatDTO.setParticipants(participants);
         chat.setName(chatDTO.getName());
         chat.setParticipants(participants);
         chat.setCreatedAt(LocalDateTime.now());
@@ -64,49 +69,71 @@ public class ChatService {
         return chat.getId();
     }
 
-
-
-
     // Add a participant to a chat
-    public void addParticipant(String chatId, String userId) {
+    public void addParticipant(String chatId, String userEmail) {
         Optional<Chat> chatOptional = chatRepository.findById(chatId);
         if (chatOptional.isPresent()) {
             Chat chat = chatOptional.get();
 
-            // Check if user is part of chat
-            List <String> participants = chat.getParticipants();
-            if (participants.contains(userId)){
-                throw new IllegalArgumentException("User ID is already a participant");
-            } else {
-                chat.getParticipants().add(userId);
-                chatRepository.save(chat);
+            List<String> participants = chat.getParticipants();
+            String currentUserName = getCurrentUserName();
+
+            // Check if current user is part of chat
+            if (!participants.contains(currentUserName)) {
+                throw new IllegalArgumentException("User is not a participant of the chat");
             }
+
+            // Check if the user to be added is already a participant
+            if (participants.contains(userEmail)) {
+                throw new IllegalArgumentException("User is already a participant");
+            }
+
+            participants.add(userEmail);
+            chatRepository.save(chat);
         }
     }
 
     // Add message to chat
     public void addMessageToChat(String id, MessageDTO messageDTO) {
         Optional<Chat> chatOptional = chatRepository.findById(id);
+
         if (chatOptional.isPresent()) {
             Chat chat = chatOptional.get();
-            Message message = new Message();
 
-            //message.setSenderEmail(messageDTO.getSenderEmail());
-            message.setContent(messageDTO.getContent());
-            message.setCreatedAt(LocalDateTime.now());
+            //Check if user is part of chat
+            List<String> participants = chat.getParticipants();
+            String userName = getCurrentUserName();
+            if (!participants.contains(userName)) {
+                throw new IllegalArgumentException("User ID is not a participant of the chat");
+            } else {
+                Message message = new Message();
 
-            chat.getMessages().add(message);
-            chat.setLastMessageTime(LocalDateTime.now());
-            chatRepository.save(chat);
+                String senderEmail = getCurrentUserName();
+
+                message.setSenderEmail(senderEmail);
+                message.setContent(messageDTO.getContent());
+                message.setCreatedAt(LocalDateTime.now());
+
+                chat.getMessages().add(message);
+                chat.setLastMessageTime(LocalDateTime.now());
+                chatRepository.save(chat);
+            }
         }
     }
 
     // Get messages by chat id
     public List<MessageDTO> getMessagesByChatId(String id) {
         Optional<Chat> chatOptional = chatRepository.findById(id);
-        List <Message> messages = new ArrayList<>();
         if (chatOptional.isPresent()) {
             Chat chat = chatOptional.get();
+
+            List<String> participants = chat.getParticipants();
+            String userId = getCurrentUserName();
+
+            if (!participants.contains(userId)) {
+                throw new IllegalArgumentException("User ID is not a participant of the chat");
+            }
+
             if (chat.getMessages() == null || chat.getMessages().isEmpty()) {
                 return new ArrayList<>();
             } else {
@@ -119,6 +146,7 @@ public class ChatService {
                     return messageDTO;
                 }).collect(Collectors.toList());
             }
+
         }
         return new ArrayList<>();
     }
