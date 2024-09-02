@@ -10,6 +10,6 @@ import java.util.List;
 @Getter
 public class ChatDTO {
     private String name;
-    private List<String> participants;  // Lägg till detta fält
+    private List<String> participants;
 }
 
