@@ -1,4 +1,20 @@
-# ChatApp API
+# Chat App, Server
+
+## Description
+This is a chat app project, set up as an assignment at Campus Mölndal. 
+
+## Features
+- **Chat**: Users can create chats with other users
+- **Search**: Users can search for other users
+- **Authentication**: JWT is set up for createing accounts and logging in
+
+## Technologies
+- **Backend**: Java
+- **Frontend**: HTML, CSS, JavaScript, React
+- **Database**: MongoDB
+
+## Licens
+Caroline Eklund holds the license. 
 
 ## Endpoints Overview
 
