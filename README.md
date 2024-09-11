@@ -10,7 +10,7 @@ This is a chat app project, set up as an assignment at Campus Mölndal.
 
 ## Technologies
 - **Backend**: Java
-- **Frontend**: HTML, CSS, JavaScript, React
+- **Frontend**: HTML, CSS, JavaScript, React. https://github.com/bycaroline/ChatAppClient_WithAuthentication
 - **Database**: MongoDB
 
 ## Licens
